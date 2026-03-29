@@ -1,0 +1,1562 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LunarOS</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --glass:rgba(255,255,255,0.72);
+  --glass-border:rgba(255,255,255,0.9);
+  --glass-shadow:0 8px 40px rgba(80,100,160,0.13),0 2px 8px rgba(80,100,160,0.08);
+  --accent:#6a8dff;
+  --accent2:#b8c6ff;
+  --accent-dark:#3a5fd6;
+  --bg:#e8edf8;
+  --text:#1a1e2e;
+  --text2:#5a6080;
+  --taskbar-h:52px;
+  --radius:14px;
+  --font:'Outfit',sans-serif;
+  --mono:'JetBrains Mono',monospace;
+}
+*{margin:0;padding:0;box-sizing:border-box;user-select:none;}
+body{font-family:var(--font);background:var(--bg);overflow:hidden;width:100vw;height:100vh;}
+
+/* ===== INSTALL ===== */
+#install-screen{position:fixed;inset:0;z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;background:linear-gradient(135deg,#0a0e1f 0%,#141830 50%,#0d1120 100%);}
+.lunar-logo-big{display:flex;flex-direction:column;align-items:center;gap:18px;margin-bottom:36px;}
+.lunar-moon{width:80px;height:80px;}
+.lunar-moon svg{width:100%;height:100%;}
+.lunar-brand{font-size:38px;font-weight:700;color:#fff;letter-spacing:3px;}
+.lunar-brand span{color:#6a8dff;}
+.install-card{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:20px;padding:36px 44px;width:440px;max-width:95vw;}
+.install-step{display:none;}
+.install-step.active{display:block;}
+.install-title{color:#fff;font-size:21px;font-weight:600;margin-bottom:6px;}
+.install-sub{color:rgba(255,255,255,0.5);font-size:13px;margin-bottom:26px;}
+.install-label{color:rgba(255,255,255,0.7);font-size:12px;margin-bottom:7px;display:block;}
+.install-select,.install-input{
+  width:100%;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.15);
+  border-radius:10px;color:#fff;padding:11px 14px;font-family:var(--font);font-size:14px;
+  outline:none;margin-bottom:14px;
+}
+.install-select option{background:#1a1e2e;color:#fff;}
+.install-btn{
+  background:var(--accent);color:#fff;border:none;border-radius:10px;
+  padding:12px 0;width:100%;font-family:var(--font);font-size:15px;font-weight:600;
+  cursor:pointer;transition:background .2s;display:block;margin-bottom:0;
+}
+.install-btn:hover{background:var(--accent-dark);}
+.install-btn.secondary{background:rgba(255,255,255,0.08);margin-top:8px;}
+.taskbar-modes{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px;}
+.taskbar-mode-opt{border:2px solid rgba(255,255,255,0.15);border-radius:12px;padding:14px;cursor:pointer;transition:all .2s;text-align:center;}
+.taskbar-mode-opt:hover,.taskbar-mode-opt.selected{border-color:var(--accent);background:rgba(106,141,255,0.12);}
+.taskbar-mode-opt .mode-name{color:#fff;font-size:14px;font-weight:600;margin-bottom:4px;}
+.taskbar-mode-opt .mode-desc{color:rgba(255,255,255,0.5);font-size:12px;}
+.progress-wrap{margin:18px 0;}
+.progress-label{color:rgba(255,255,255,0.6);font-size:12px;margin-bottom:7px;}
+.progress-bar{height:5px;background:rgba(255,255,255,0.1);border-radius:99px;overflow:hidden;}
+.progress-fill{height:100%;background:linear-gradient(90deg,#6a8dff,#b8c6ff);border-radius:99px;transition:width .35s ease;width:0%;}
+.progress-files{color:rgba(255,255,255,0.35);font-size:11px;margin-top:5px;font-family:var(--mono);}
+.avatar-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:18px;}
+.av-opt{width:100%;aspect-ratio:1;border-radius:50%;cursor:pointer;border:3px solid transparent;overflow:hidden;transition:border-color .2s;}
+.av-opt.selected{border-color:var(--accent);}
+.av-inner{width:100%;height:100%;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:700;color:#fff;}
+
+/* ===== LOGIN ===== */
+#login-screen{position:fixed;inset:0;z-index:8888;display:none;align-items:center;justify-content:center;flex-direction:column;}
+.login-bg{position:absolute;inset:0;background:linear-gradient(160deg,#dde4f7 0%,#c8d3f0 50%,#e0e8ff 100%);}
+.login-card{position:relative;background:var(--glass);backdrop-filter:blur(24px);border:1px solid var(--glass-border);border-radius:24px;padding:38px 42px;width:360px;max-width:95vw;box-shadow:var(--glass-shadow);text-align:center;}
+.login-avatar{width:76px;height:76px;border-radius:50%;margin:0 auto 12px;overflow:hidden;border:3px solid var(--accent2);}
+.login-av-inner{width:100%;height:100%;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:26px;font-weight:700;color:#fff;}
+.login-name{font-size:19px;font-weight:700;color:var(--text);margin-bottom:4px;}
+.login-hint{font-size:13px;color:var(--text2);margin-bottom:22px;}
+.login-input{width:100%;border:1.5px solid rgba(106,141,255,0.3);border-radius:10px;padding:11px 14px;font-family:var(--font);font-size:14px;background:rgba(255,255,255,0.6);outline:none;color:var(--text);margin-bottom:12px;}
+.login-btn{background:var(--accent);color:#fff;border:none;border-radius:10px;padding:11px 0;width:100%;font-family:var(--font);font-size:14px;font-weight:600;cursor:pointer;transition:background .2s;}
+.login-btn:hover{background:var(--accent-dark);}
+.login-switch{margin-top:14px;color:var(--text2);font-size:12px;cursor:pointer;}
+.login-switch:hover{color:var(--accent);}
+
+/* ===== DESKTOP ===== */
+#desktop{position:fixed;inset:0;display:none;}
+#wallpaper{position:absolute;inset:0;background-size:cover;background-position:center;transition:background .5s;}
+#desktop-icons{position:absolute;top:16px;left:16px;display:flex;flex-direction:column;gap:2px;flex-wrap:wrap;height:calc(100vh - 70px);}
+.desk-icon{display:flex;flex-direction:column;align-items:center;gap:5px;cursor:pointer;padding:8px;border-radius:10px;width:70px;transition:background .15s;}
+.desk-icon:hover{background:rgba(255,255,255,0.3);}
+.desk-icon:active{transform:scale(.95);}
+.desk-icon .dicon-img{width:42px;height:42px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#fff;box-shadow:0 4px 12px rgba(0,0,0,0.15);}
+.desk-icon .dicon-label{font-size:11px;color:#fff;text-shadow:0 1px 4px rgba(0,0,0,0.5);text-align:center;line-height:1.3;max-width:66px;word-break:break-word;}
+
+/* ===== TASKBAR ===== */
+#taskbar{position:absolute;bottom:0;left:0;right:0;height:var(--taskbar-h);display:flex;align-items:center;justify-content:space-between;padding:0 12px;z-index:1000;}
+#taskbar.normal{background:rgba(255,255,255,0.82);backdrop-filter:blur(20px);border-top:1px solid rgba(255,255,255,0.9);}
+#taskbar.island{justify-content:center;background:none;pointer-events:none;}
+.tb-island{background:rgba(20,24,50,0.88);backdrop-filter:blur(24px);border-radius:20px;padding:5px 16px;display:flex;align-items:center;gap:6px;pointer-events:all;box-shadow:0 8px 32px rgba(0,0,0,0.22);}
+.tb-left,.tb-right{display:flex;align-items:center;gap:6px;}
+.tb-btn{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:background .15s;position:relative;flex-shrink:0;}
+.tb-btn:hover{background:rgba(106,141,255,0.15);}
+.tb-btn svg{width:19px;height:19px;}
+.tb-island .tb-btn:hover{background:rgba(255,255,255,0.1);}
+.tb-clock{font-size:11px;font-weight:600;color:var(--text);line-height:1.4;text-align:right;padding:0 4px;}
+#taskbar.island .tb-clock{color:#fff;}
+.tb-sep{width:1px;height:20px;background:rgba(128,128,128,0.25);margin:0 3px;}
+.tb-app-dot{width:4px;height:4px;border-radius:50%;background:var(--accent);position:absolute;bottom:3px;}
+
+/* ===== WINDOWS ===== */
+.window{position:absolute;background:var(--glass);backdrop-filter:blur(32px);border:1px solid var(--glass-border);border-radius:var(--radius);box-shadow:var(--glass-shadow);display:flex;flex-direction:column;min-width:300px;min-height:200px;z-index:100;}
+.window.opening{animation:winOpen .22s cubic-bezier(.34,1.56,.64,1) both;}
+.window.closing{animation:winClose .18s ease forwards;}
+@keyframes winOpen{from{opacity:0;transform:scale(.88)}to{opacity:1;transform:scale(1)}}
+@keyframes winClose{to{opacity:0;transform:scale(.9)}}
+.win-titlebar{height:40px;display:flex;align-items:center;padding:0 12px;cursor:move;border-radius:var(--radius) var(--radius) 0 0;background:rgba(255,255,255,0.45);border-bottom:1px solid rgba(255,255,255,0.65);flex-shrink:0;}
+.win-title{flex:1;font-size:13px;font-weight:600;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.win-controls{display:flex;gap:6px;}
+.win-ctrl{width:13px;height:13px;border-radius:50%;cursor:pointer;transition:filter .15s;flex-shrink:0;}
+.win-ctrl:hover{filter:brightness(.75);}
+.win-ctrl.close{background:#ff5f57;}
+.win-ctrl.min{background:#ffbd2e;}
+.win-ctrl.max{background:#28c840;}
+.win-body{flex:1;overflow:auto;border-radius:0 0 var(--radius) var(--radius);position:relative;}
+.resize-handle{position:absolute;bottom:0;right:0;width:16px;height:16px;cursor:se-resize;z-index:10;opacity:.4;}
+.resize-handle::after{content:'';position:absolute;bottom:4px;right:4px;width:7px;height:7px;border-right:2px solid var(--accent);border-bottom:2px solid var(--accent);}
+
+/* ===== APP STYLES ===== */
+/* Settings */
+.settings-layout{display:flex;height:100%;}
+.settings-sidebar{width:170px;border-right:1px solid rgba(106,141,255,0.12);padding:14px 7px;display:flex;flex-direction:column;gap:3px;flex-shrink:0;}
+.settings-main{flex:1;padding:22px;overflow:auto;}
+.set-nav{padding:8px 11px;border-radius:8px;cursor:pointer;font-size:13px;font-weight:500;color:var(--text2);transition:all .15s;}
+.set-nav:hover{background:rgba(106,141,255,0.08);color:var(--text);}
+.set-nav.active{background:rgba(106,141,255,0.14);color:var(--accent);}
+.set-section{display:none;}
+.set-section.active{display:block;}
+.set-title{font-size:17px;font-weight:700;color:var(--text);margin-bottom:18px;}
+.set-row{display:flex;align-items:center;justify-content:space-between;padding:13px 15px;background:rgba(255,255,255,0.5);border-radius:10px;margin-bottom:7px;}
+.set-row-label{font-size:13px;font-weight:500;color:var(--text);}
+.set-row-desc{font-size:11px;color:var(--text2);margin-top:2px;}
+.toggle{width:42px;height:24px;background:#ccc;border-radius:12px;position:relative;cursor:pointer;transition:background .2s;flex-shrink:0;}
+.toggle.on{background:var(--accent);}
+.toggle::after{content:'';position:absolute;width:18px;height:18px;background:#fff;border-radius:50%;top:3px;left:3px;transition:left .2s;box-shadow:0 2px 4px rgba(0,0,0,0.15);}
+.toggle.on::after{left:21px;}
+.wp-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:8px;}
+.wp-thumb{border-radius:10px;height:70px;cursor:pointer;border:3px solid transparent;overflow:hidden;}
+.wp-thumb.active{border-color:var(--accent);}
+.wp-thumb-inner{width:100%;height:100%;background-size:cover;background-position:center;}
+/* Browser */
+.browser-bar{display:flex;align-items:center;gap:7px;padding:9px 13px;background:rgba(255,255,255,0.5);border-bottom:1px solid rgba(106,141,255,0.1);flex-shrink:0;}
+.browser-url{flex:1;background:rgba(255,255,255,0.7);border:1.5px solid rgba(106,141,255,0.2);border-radius:8px;padding:6px 11px;font-family:var(--mono);font-size:12px;color:var(--text);outline:none;}
+.browser-go{background:var(--accent);color:#fff;border:none;border-radius:8px;padding:6px 12px;cursor:pointer;font-family:var(--font);font-size:12px;font-weight:600;}
+.browser-go.nav{background:rgba(100,100,140,0.1);color:var(--text);}
+.browser-content{padding:24px;overflow:auto;flex:1;}
+.browser-page{display:none;}
+.browser-page.active{display:block;}
+.page-hero{background:linear-gradient(135deg,#6a8dff,#b8c6ff);border-radius:14px;padding:32px;margin-bottom:20px;color:#fff;}
+.page-hero h1{font-size:24px;font-weight:700;margin-bottom:6px;}
+.page-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;}
+.page-card{background:rgba(255,255,255,0.6);border-radius:12px;padding:14px;border:1px solid rgba(255,255,255,0.8);cursor:pointer;transition:transform .15s;}
+.page-card:hover{transform:translateY(-2px);}
+.page-card h3{font-size:13px;font-weight:600;color:var(--text);margin-bottom:5px;}
+.page-card p{font-size:11px;color:var(--text2);}
+/* Store */
+.store-header{background:linear-gradient(135deg,#1a1e2e,#2a3060);padding:24px;color:#fff;flex-shrink:0;}
+.store-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:12px;padding:18px;}
+.store-app{background:rgba(255,255,255,0.6);border-radius:12px;padding:14px;border:1px solid rgba(255,255,255,0.8);cursor:pointer;transition:all .15s;}
+.store-app:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(106,141,255,0.15);}
+.store-app-icon{width:44px;height:44px;border-radius:12px;margin-bottom:9px;}
+.store-app-name{font-size:12px;font-weight:600;color:var(--text);margin-bottom:3px;}
+.store-app-cat{font-size:10px;color:var(--text2);}
+.store-btn{background:var(--accent);color:#fff;border:none;border-radius:7px;padding:5px 12px;font-family:var(--font);font-size:11px;font-weight:600;cursor:pointer;margin-top:7px;}
+/* Code */
+.code-toolbar{background:rgba(20,24,50,0.92);padding:7px 12px;display:flex;align-items:center;gap:8px;flex-shrink:0;}
+.code-lang-sel{background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.15);color:#fff;border-radius:6px;padding:4px 9px;font-family:var(--font);font-size:12px;}
+.code-run-btn{background:var(--accent);color:#fff;border:none;border-radius:6px;padding:5px 13px;font-family:var(--font);font-size:12px;font-weight:600;cursor:pointer;}
+.code-area{display:flex;flex:1;overflow:hidden;}
+.code-input{flex:1;background:#0d1020;color:#c8d3f5;font-family:var(--mono);font-size:12px;border:none;outline:none;padding:14px;resize:none;line-height:1.65;}
+.code-output{width:190px;background:#050810;border-left:1px solid rgba(255,255,255,0.07);padding:13px;font-family:var(--mono);font-size:11px;color:#6aff9a;overflow:auto;white-space:pre-wrap;word-break:break-all;}
+/* VMs */
+.vm-header-bar{padding:18px 20px;border-bottom:1px solid rgba(106,141,255,0.1);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
+.vm-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:12px;padding:16px;overflow:auto;}
+.vm-card{background:rgba(255,255,255,0.6);border-radius:12px;padding:16px;border:1px solid rgba(255,255,255,0.8);transition:all .15s;}
+.vm-card:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(106,141,255,0.15);}
+.vm-card-top{display:flex;align-items:center;gap:11px;margin-bottom:10px;}
+.vm-icon{width:38px;height:38px;border-radius:10px;background:linear-gradient(135deg,#6a8dff,#b8c6ff);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.vm-name{font-size:13px;font-weight:600;color:var(--text);}
+.vm-ver{font-size:10px;color:var(--text2);}
+.vm-status{display:inline-flex;align-items:center;gap:5px;font-size:11px;padding:3px 8px;border-radius:99px;font-weight:500;}
+.vm-status.running{background:rgba(40,200,80,0.12);color:#1a9a40;}
+.vm-status.stopped{background:rgba(100,100,120,0.1);color:#777;}
+.vm-actions{display:flex;gap:5px;margin-top:10px;}
+.vm-btn{flex:1;background:var(--accent);color:#fff;border:none;border-radius:7px;padding:5px 2px;font-family:var(--font);font-size:10px;font-weight:600;cursor:pointer;}
+.vm-btn.sec{background:rgba(100,100,140,0.1);color:var(--text);}
+.vm-btn.del{background:rgba(255,60,60,0.1);color:#d03030;}
+.new-vm-btn{background:var(--accent);color:#fff;border:none;border-radius:9px;padding:9px 18px;font-family:var(--font);font-size:13px;font-weight:600;cursor:pointer;}
+/* Chat */
+.chat-wrap{display:flex;flex-direction:column;height:100%;}
+.chat-header{padding:13px 15px;border-bottom:1px solid rgba(106,141,255,0.1);display:flex;align-items:center;gap:10px;flex-shrink:0;}
+.chat-ai-icon{width:30px;height:30px;border-radius:9px;background:linear-gradient(135deg,#6a8dff,#b8c6ff);display:flex;align-items:center;justify-content:center;font-size:11px;color:#fff;font-weight:700;flex-shrink:0;}
+.chat-msgs{flex:1;overflow:auto;padding:14px;display:flex;flex-direction:column;gap:9px;}
+.chat-msg{max-width:82%;padding:9px 13px;border-radius:12px;font-size:13px;line-height:1.5;word-break:break-word;}
+.chat-msg.user{background:var(--accent);color:#fff;align-self:flex-end;border-radius:12px 12px 4px 12px;}
+.chat-msg.ai{background:rgba(255,255,255,0.7);color:var(--text);align-self:flex-start;border-radius:12px 12px 12px 4px;border:1px solid rgba(255,255,255,0.9);}
+.chat-input-row{display:flex;gap:7px;padding:11px;border-top:1px solid rgba(106,141,255,0.1);flex-shrink:0;}
+.chat-input{flex:1;border:1.5px solid rgba(106,141,255,0.2);border-radius:10px;padding:9px 13px;font-family:var(--font);font-size:13px;background:rgba(255,255,255,0.6);outline:none;color:var(--text);}
+.chat-send{background:var(--accent);color:#fff;border:none;border-radius:10px;padding:9px 14px;font-family:var(--font);font-size:13px;font-weight:600;cursor:pointer;}
+/* Files */
+.files-sidebar{width:140px;border-right:1px solid rgba(106,141,255,0.1);padding:12px 7px;flex-shrink:0;}
+.files-nav{padding:7px 10px;border-radius:8px;font-size:12px;color:var(--text2);cursor:pointer;transition:background .15s;}
+.files-nav:hover{background:rgba(106,141,255,0.08);}
+.files-main{flex:1;padding:14px;overflow:auto;}
+.files-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(76px,1fr));gap:10px;}
+.file-item{display:flex;flex-direction:column;align-items:center;gap:5px;padding:9px 6px;border-radius:9px;cursor:pointer;transition:background .15s;}
+.file-item:hover{background:rgba(106,141,255,0.1);}
+.file-icon{font-size:30px;}
+.file-name{font-size:10px;color:var(--text);text-align:center;word-break:break-word;}
+/* Terminal */
+.term-wrap{display:flex;flex-direction:column;height:100%;background:#050810;}
+.term-topbar{padding:7px 12px;background:rgba(255,255,255,0.04);border-bottom:1px solid rgba(255,255,255,0.06);font-size:11px;color:rgba(255,255,255,0.4);font-family:var(--mono);flex-shrink:0;}
+.term-output{flex:1;overflow:auto;padding:12px;font-family:var(--mono);font-size:12px;color:#c8d3f5;line-height:1.6;}
+.term-input-row{display:flex;align-items:center;padding:7px 12px;background:rgba(255,255,255,0.03);border-top:1px solid rgba(255,255,255,0.06);flex-shrink:0;}
+.term-prompt{color:#6aff9a;font-family:var(--mono);font-size:12px;white-space:nowrap;}
+.term-input{flex:1;background:none;border:none;outline:none;color:#c8d3f5;font-family:var(--mono);font-size:12px;margin-left:5px;}
+
+/* ===== LOADING ===== */
+#loading-overlay{position:fixed;inset:0;z-index:9990;background:linear-gradient(135deg,#0a0e1f,#141830);display:flex;flex-direction:column;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .4s;}
+#loading-overlay.active{opacity:1;pointer-events:all;}
+.loading-logo{margin-bottom:28px;}
+.loading-dots{display:flex;gap:9px;margin-top:18px;}
+.ld{width:9px;height:9px;border-radius:50%;background:var(--accent);animation:ldPulse 1.2s ease infinite;}
+.ld:nth-child(2){animation-delay:.2s;}
+.ld:nth-child(3){animation-delay:.4s;}
+@keyframes ldPulse{0%,100%{opacity:.3;transform:scale(.8)}50%{opacity:1;transform:scale(1)}}
+.loading-text{color:rgba(255,255,255,0.45);font-size:12px;margin-top:14px;font-family:var(--mono);}
+
+/* ===== VM OVERLAY ===== */
+#vm-overlay{position:fixed;inset:0;z-index:9980;background:rgba(8,12,28,0.97);display:none;flex-direction:column;align-items:center;justify-content:center;}
+#vm-overlay.active{display:flex;}
+.vm-load-title{color:#fff;font-size:17px;font-weight:700;margin-top:18px;margin-bottom:6px;}
+.vm-load-status{color:rgba(255,255,255,0.45);font-size:12px;margin-bottom:22px;font-family:var(--mono);}
+.vm-load-bar-wrap{width:200px;background:rgba(255,255,255,0.1);height:4px;border-radius:99px;overflow:hidden;}
+.vm-load-bar{height:100%;background:linear-gradient(90deg,#6a8dff,#b8c6ff);border-radius:99px;width:0%;transition:width .4s;}
+
+/* ===== NOTIFICATIONS ===== */
+#notif-wrap{position:fixed;bottom:68px;right:14px;z-index:5000;display:flex;flex-direction:column;gap:7px;align-items:flex-end;pointer-events:none;}
+.notif{background:var(--glass);backdrop-filter:blur(24px);border:1px solid var(--glass-border);border-radius:12px;padding:11px 15px;font-size:12px;color:var(--text);box-shadow:var(--glass-shadow);animation:notifIn .28s ease both;max-width:260px;pointer-events:all;}
+.notif-title{font-weight:600;margin-bottom:2px;font-size:13px;}
+@keyframes notifIn{from{opacity:0;transform:translateX(30px)}to{opacity:1;transform:translateX(0)}}
+
+/* ===== START MENU ===== */
+#start-menu{position:absolute;bottom:62px;width:360px;background:var(--glass);backdrop-filter:blur(32px);border:1px solid var(--glass-border);border-radius:20px;padding:18px;box-shadow:var(--glass-shadow);z-index:2000;display:none;}
+#start-menu.island-pos{left:50%;transform:translateX(-50%);}
+#start-menu.normal-pos{left:12px;transform:none;}
+.start-search{width:100%;border:1.5px solid rgba(106,141,255,0.22);border-radius:9px;padding:9px 13px;font-family:var(--font);font-size:13px;background:rgba(255,255,255,0.6);outline:none;color:var(--text);margin-bottom:14px;}
+.start-apps{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;}
+.start-app{display:flex;flex-direction:column;align-items:center;gap:5px;padding:9px 5px;border-radius:9px;cursor:pointer;transition:background .15s;}
+.start-app:hover{background:rgba(106,141,255,0.1);}
+.start-app .sa-icon{width:36px;height:36px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;}
+.start-app .sa-label{font-size:10px;color:var(--text2);text-align:center;}
+.start-footer{display:flex;align-items:center;justify-content:space-between;margin-top:14px;padding-top:12px;border-top:1px solid rgba(106,141,255,0.1);}
+.start-user{display:flex;align-items:center;gap:8px;}
+.start-user-av{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;}
+.start-user-name{font-size:12px;font-weight:600;color:var(--text);}
+.start-power{background:rgba(255,60,60,0.1);color:#d03030;border:none;border-radius:8px;padding:6px 12px;font-family:var(--font);font-size:12px;font-weight:600;cursor:pointer;}
+
+/* ===== NOTIF PANEL ===== */
+#notif-panel{position:absolute;bottom:62px;right:12px;width:280px;background:var(--glass);backdrop-filter:blur(32px);border:1px solid var(--glass-border);border-radius:18px;padding:18px;box-shadow:var(--glass-shadow);z-index:2000;display:none;}
+.np-title{font-size:14px;font-weight:700;color:var(--text);margin-bottom:12px;}
+.np-empty{color:var(--text2);font-size:12px;text-align:center;padding:10px 0;}
+
+/* ===== CONTEXT MENU ===== */
+#ctx-menu{position:fixed;z-index:9000;background:var(--glass);backdrop-filter:blur(24px);border:1px solid var(--glass-border);border-radius:11px;padding:5px;box-shadow:var(--glass-shadow);display:none;min-width:155px;}
+.ctx-item{padding:8px 13px;border-radius:7px;font-size:13px;color:var(--text);cursor:pointer;transition:background .1s;}
+.ctx-item:hover{background:rgba(106,141,255,0.12);}
+.ctx-sep{height:1px;background:rgba(106,141,255,0.1);margin:4px 0;}
+
+/* ===== SCROLLBAR ===== */
+::-webkit-scrollbar{width:4px;height:4px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:rgba(106,141,255,0.3);border-radius:99px;}
+</style>
+</head>
+<body>
+
+<!-- INSTALL SCREEN -->
+<div id="install-screen">
+  <div class="lunar-logo-big">
+    <div class="lunar-moon">
+      <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+        <defs><radialGradient id="mg" cx="35%" cy="35%"><stop offset="0%" stop-color="#a0b4ff"/><stop offset="100%" stop-color="#3050c0"/></radialGradient></defs>
+        <circle cx="50" cy="50" r="46" fill="url(#mg)" opacity="0.12"/>
+        <circle cx="50" cy="50" r="40" fill="url(#mg)"/>
+        <circle cx="70" cy="35" r="28" fill="#0a0e1f"/>
+        <circle cx="30" cy="68" r="5" fill="rgba(255,255,255,0.1)"/>
+        <circle cx="55" cy="72" r="3" fill="rgba(255,255,255,0.07)"/>
+        <circle cx="25" cy="40" r="4" fill="rgba(255,255,255,0.08)"/>
+      </svg>
+    </div>
+    <div class="lunar-brand">Lunar<span>OS</span></div>
+  </div>
+  <div class="install-card">
+    <!-- Step 1 -->
+    <div class="install-step active" id="step1">
+      <div class="install-title">Welcome to LunarOS</div>
+      <div class="install-sub">Let's get your system ready. This will only take a moment.</div>
+      <label class="install-label">Language</label>
+      <select class="install-select" id="sel-lang">
+        <option value="en">English (United States)</option>
+        <option value="es">Español</option>
+        <option value="fr">Français</option>
+        <option value="de">Deutsch</option>
+        <option value="pt">Português (Brasil)</option>
+        <option value="ja">日本語</option>
+      </select>
+      <label class="install-label">Time Zone</label>
+      <select class="install-select" id="sel-tz">
+        <option value="UTC-5">UTC-5 (Eastern)</option>
+        <option value="UTC-6">UTC-6 (Central)</option>
+        <option value="UTC-7">UTC-7 (Mountain)</option>
+        <option value="UTC-8">UTC-8 (Pacific)</option>
+        <option value="UTC+0">UTC+0 (GMT)</option>
+        <option value="UTC+1">UTC+1 (Central Europe)</option>
+        <option value="UTC+2">UTC+2 (Eastern Europe)</option>
+        <option value="UTC+9">UTC+9 (Japan)</option>
+      </select>
+      <button class="install-btn" onclick="goStep(2)">Continue</button>
+    </div>
+    <!-- Step 2 -->
+    <div class="install-step" id="step2">
+      <div class="install-title">Taskbar Style</div>
+      <div class="install-sub">Choose how you want the taskbar to appear.</div>
+      <div class="taskbar-modes">
+        <div class="taskbar-mode-opt selected" id="mode-island" onclick="selectTaskbarMode('island')">
+          <div class="mode-name">Island</div>
+          <div class="mode-desc">Floating pill, centered</div>
+        </div>
+        <div class="taskbar-mode-opt" id="mode-normal" onclick="selectTaskbarMode('normal')">
+          <div class="mode-name">Normal</div>
+          <div class="mode-desc">Classic full-width bar</div>
+        </div>
+      </div>
+      <button class="install-btn" onclick="goStep(3)">Continue</button>
+      <button class="install-btn secondary" onclick="goStep(1)">Back</button>
+    </div>
+    <!-- Step 3 -->
+    <div class="install-step" id="step3">
+      <div class="install-title">Create Your Account</div>
+      <div class="install-sub">Set up a local user account.</div>
+      <label class="install-label">Username</label>
+      <input class="install-input" id="reg-user" type="text" placeholder="Your name" maxlength="24">
+      <label class="install-label">Password</label>
+      <input class="install-input" id="reg-pass" type="password" placeholder="Create a password">
+      <label class="install-label">Choose Avatar</label>
+      <div class="avatar-grid" id="avatar-grid"></div>
+      <button class="install-btn" onclick="createAccount()">Create Account &amp; Install</button>
+      <button class="install-btn secondary" onclick="goStep(2)">Back</button>
+    </div>
+    <!-- Step 4 -->
+    <div class="install-step" id="step4">
+      <div class="install-title">Installing LunarOS</div>
+      <div class="install-sub">Please wait while we prepare your system...</div>
+      <div class="progress-wrap">
+        <div class="progress-label">Overall Progress</div>
+        <div class="progress-bar"><div class="progress-fill" id="install-prog"></div></div>
+        <div class="progress-files" id="install-file">Initializing...</div>
+      </div>
+      <div class="progress-wrap">
+        <div class="progress-label">Current Task</div>
+        <div class="progress-bar"><div class="progress-fill" id="install-task" style="background:linear-gradient(90deg,#b8c6ff,#6a8dff)"></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- LOGIN SCREEN -->
+<div id="login-screen">
+  <div class="login-bg"></div>
+  <div class="login-card">
+    <div class="login-avatar" id="login-avatar-wrap"></div>
+    <div class="login-name" id="login-name-display">User</div>
+    <div class="login-hint">Enter your password to sign in</div>
+    <input class="login-input" id="login-pass" type="password" placeholder="Password" onkeydown="if(event.key==='Enter')doLogin()">
+    <button class="login-btn" onclick="doLogin()">Sign In</button>
+    <div class="login-switch" onclick="addUserPrompt()">+ Add another account</div>
+  </div>
+</div>
+
+<!-- DESKTOP -->
+<div id="desktop">
+  <div id="wallpaper"></div>
+  <div id="desktop-icons"></div>
+  <div id="taskbar"></div>
+  <div id="start-menu">
+    <input class="start-search" placeholder="Search apps..." oninput="filterStartMenu(this.value)" id="start-search-input">
+    <div class="start-apps" id="start-apps-grid"></div>
+    <div class="start-footer">
+      <div class="start-user">
+        <div class="start-user-av" id="start-user-av"></div>
+        <div class="start-user-name" id="start-user-name"></div>
+      </div>
+      <button class="start-power" onclick="doLogout()">Sign Out</button>
+    </div>
+  </div>
+  <div id="notif-panel">
+    <div class="np-title">Notifications</div>
+    <div class="np-empty">No new notifications</div>
+  </div>
+</div>
+
+<!-- CONTEXT MENU -->
+<div id="ctx-menu"></div>
+
+<!-- NOTIF STACK -->
+<div id="notif-wrap"></div>
+
+<!-- LOADING OVERLAY -->
+<div id="loading-overlay">
+  <div class="loading-logo">
+    <svg width="56" height="56" viewBox="0 0 100 100"><defs><radialGradient id="mg2" cx="35%" cy="35%"><stop offset="0%" stop-color="#a0b4ff"/><stop offset="100%" stop-color="#3050c0"/></radialGradient></defs><circle cx="50" cy="50" r="40" fill="url(#mg2)"/><circle cx="70" cy="35" r="28" fill="#0a0e1f"/></svg>
+  </div>
+  <div class="loading-dots"><div class="ld"></div><div class="ld"></div><div class="ld"></div></div>
+  <div class="loading-text" id="loading-text">Starting LunarOS...</div>
+</div>
+
+<!-- VM OVERLAY -->
+<div id="vm-overlay">
+  <svg width="46" height="46" viewBox="0 0 100 100"><defs><radialGradient id="mg3" cx="35%" cy="35%"><stop offset="0%" stop-color="#a0b4ff"/><stop offset="100%" stop-color="#3050c0"/></radialGradient></defs><circle cx="50" cy="50" r="40" fill="url(#mg3)"/><circle cx="70" cy="35" r="28" fill="#0a0e1f"/></svg>
+  <div class="vm-load-title" id="vm-load-name">Virtual Machine</div>
+  <div class="vm-load-status" id="vm-load-status">Starting...</div>
+  <div class="vm-load-bar-wrap"><div class="vm-load-bar" id="vm-load-bar"></div></div>
+  <div class="loading-dots" style="margin-top:18px"><div class="ld"></div><div class="ld"></div><div class="ld"></div></div>
+</div>
+
+<script>
+// =====================
+// STATE
+// =====================
+var OS = {
+  installed: false,
+  accounts: [],
+  currentUser: null,
+  taskbarMode: 'island',
+  wallpaper: 0,
+  language: 'en',
+  timezone: 'UTC-5',
+  vms: [],
+  soundOn: true,
+  windowZ: 200
+};
+
+var WALLPAPERS = [
+  'linear-gradient(135deg,#dde4f7 0%,#bac7ed 40%,#d0daff 100%)',
+  'linear-gradient(160deg,#0a0e1f 0%,#141830 40%,#1e2848 100%)',
+  'linear-gradient(120deg,#e8f4e8 0%,#c8e8d8 40%,#d8f0e8 100%)',
+  'radial-gradient(ellipse at 20% 30%,#e8e0ff 0%,#d0d8f8 40%,#e8eff8 100%)'
+];
+
+var AVATARS = [
+  {color:'#6a8dff',letter:'A'},{color:'#ff6a8d',letter:'B'},
+  {color:'#6affb8',letter:'C'},{color:'#ffb86a',letter:'D'},
+  {color:'#b86aff',letter:'E'},{color:'#6adfff',letter:'F'},
+  {color:'#ff8a6a',letter:'G'},{color:'#8aff6a',letter:'H'}
+];
+
+var APPS = [
+  {id:'lunarhelp', name:'LunarHelp',        color:'linear-gradient(135deg,#6a8dff,#b8c6ff)', short:'AI'},
+  {id:'browser',   name:'GreatBrowser',     color:'linear-gradient(135deg,#28c0a0,#6affdf)', short:'GB'},
+  {id:'store',     name:'LunarStore',       color:'linear-gradient(135deg,#ff6a8d,#ffb8c8)', short:'LS'},
+  {id:'settings',  name:'Settings',         color:'linear-gradient(135deg,#888,#bbb)',        short:'ST'},
+  {id:'code',      name:'Code',             color:'linear-gradient(135deg,#1a1e2e,#2a3060)',  short:'</>'},
+  {id:'vms',       name:'Virtual Machines', color:'linear-gradient(135deg,#ffb86a,#ffe0b8)',  short:'VM'},
+  {id:'files',     name:'Files',            color:'linear-gradient(135deg,#6a8dff,#8ab4ff)',  short:'FL'},
+  {id:'terminal',  name:'Terminal',         color:'linear-gradient(135deg,#1a1e2e,#050810)',  short:'T>'}
+];
+
+var WIN_CONFIGS = {
+  lunarhelp: {w:440, h:520, title:'LunarHelp — AI Assistant'},
+  browser:   {w:700, h:500, title:'GreatBrowser'},
+  store:     {w:600, h:480, title:'LunarStore'},
+  settings:  {w:600, h:460, title:'Settings'},
+  code:      {w:680, h:480, title:'Code Editor'},
+  vms:       {w:580, h:440, title:'Virtual Machines'},
+  files:     {w:540, h:400, title:'Files'},
+  terminal:  {w:520, h:380, title:'Terminal'}
+};
+
+var INSTALL_FILES = [
+  'Loading kernel modules...','Initializing filesystem...',
+  'Installing LunarCore v4.2.1...','Configuring display drivers...',
+  'Setting up LunarShell...','Installing default applications...',
+  'Configuring security policies...','Building font cache...',
+  'Setting up user environment...','Finalizing installation...'
+];
+
+var selectedAvatar = 0;
+var selectedTaskbarMode = 'island';
+var startMenuOpen = false;
+var notifPanelOpen = false;
+var dragging = null, dragOffX = 0, dragOffY = 0;
+var resizing = null;
+
+// =====================
+// INIT
+// =====================
+function init() {
+  try {
+    var saved = localStorage.getItem('lunarOS_v2');
+    if (saved) {
+      var data = JSON.parse(saved);
+      OS = Object.assign(OS, data);
+    }
+  } catch(e) {}
+
+  buildAvatarGrid();
+
+  if (OS.installed && OS.accounts.length > 0) {
+    showLogin();
+  } else {
+    document.getElementById('install-screen').style.display = 'flex';
+  }
+}
+
+function saveOS() {
+  try { localStorage.setItem('lunarOS_v2', JSON.stringify(OS)); } catch(e) {}
+}
+
+// =====================
+// INSTALL
+// =====================
+function buildAvatarGrid() {
+  var g = document.getElementById('avatar-grid');
+  if (!g) return;
+  g.innerHTML = '';
+  AVATARS.forEach(function(av, i) {
+    var d = document.createElement('div');
+    d.className = 'av-opt' + (i === 0 ? ' selected' : '');
+    d.id = 'av-' + i;
+    d.onclick = function() { selectAvatar(i); };
+    var inner = document.createElement('div');
+    inner.className = 'av-inner';
+    inner.style.background = av.color;
+    inner.textContent = av.letter;
+    d.appendChild(inner);
+    g.appendChild(d);
+  });
+}
+
+function selectAvatar(i) {
+  selectedAvatar = i;
+  document.querySelectorAll('.av-opt').forEach(function(el) { el.classList.remove('selected'); });
+  var el = document.getElementById('av-' + i);
+  if (el) el.classList.add('selected');
+}
+
+function goStep(n) {
+  document.querySelectorAll('.install-step').forEach(function(el) { el.classList.remove('active'); });
+  var step = document.getElementById('step' + n);
+  if (step) step.classList.add('active');
+}
+
+function selectTaskbarMode(m) {
+  selectedTaskbarMode = m;
+  var island = document.getElementById('mode-island');
+  var normal = document.getElementById('mode-normal');
+  if (island) island.classList.toggle('selected', m === 'island');
+  if (normal) normal.classList.toggle('selected', m === 'normal');
+}
+
+function createAccount() {
+  var u = document.getElementById('reg-user').value.trim();
+  var p = document.getElementById('reg-pass').value;
+  if (!u) { alert('Please enter a username.'); return; }
+  if (!p) { alert('Please enter a password.'); return; }
+
+  OS.accounts.push({ username: u, password: p, avatar: selectedAvatar });
+  OS.taskbarMode = selectedTaskbarMode;
+  OS.language = document.getElementById('sel-lang').value;
+  OS.timezone = document.getElementById('sel-tz').value;
+  OS.vms = [
+    {id:'vm1', name:'Light LunarOS 16', version:'16.2', status:'stopped', ram:'2GB', disk:'20GB'},
+    {id:'vm2', name:'Light LunarOS 17', version:'17.0', status:'stopped', ram:'4GB', disk:'40GB'}
+  ];
+
+  goStep(4);
+  runInstallAnimation();
+}
+
+function runInstallAnimation() {
+  var prog = 0;
+  var fileIdx = 0;
+
+  function tick() {
+    prog += Math.random() * 9 + 2;
+    if (prog > 100) prog = 100;
+
+    var progEl = document.getElementById('install-prog');
+    var taskEl = document.getElementById('install-task');
+    var fileEl = document.getElementById('install-file');
+
+    if (progEl) progEl.style.width = prog + '%';
+    if (taskEl) taskEl.style.width = (Math.random() * 100) + '%';
+    if (fileEl && fileIdx < INSTALL_FILES.length) {
+      fileEl.textContent = INSTALL_FILES[fileIdx++];
+    }
+
+    if (prog < 100) {
+      setTimeout(tick, 300 + Math.random() * 400);
+    } else {
+      setTimeout(finishInstall, 700);
+    }
+  }
+
+  tick();
+}
+
+function finishInstall() {
+  OS.installed = true;
+  saveOS();
+  document.getElementById('install-screen').style.display = 'none';
+  showLoading('Welcome to LunarOS', 1800, function() { showLogin(); });
+}
+
+// =====================
+// LOADING
+// =====================
+function showLoading(text, dur, cb) {
+  var ov = document.getElementById('loading-overlay');
+  var lt = document.getElementById('loading-text');
+  if (lt) lt.textContent = text || 'Loading...';
+  ov.classList.add('active');
+  setTimeout(function() {
+    ov.classList.remove('active');
+    if (cb) setTimeout(cb, 400);
+  }, dur || 1500);
+}
+
+// =====================
+// LOGIN
+// =====================
+function showLogin() {
+  document.getElementById('install-screen').style.display = 'none';
+  var ls = document.getElementById('login-screen');
+  ls.style.display = 'flex';
+
+  var user = OS.accounts[0];
+  if (user) {
+    var wrap = document.getElementById('login-avatar-wrap');
+    wrap.innerHTML = '';
+    var av = AVATARS[user.avatar] || AVATARS[0];
+    var inner = document.createElement('div');
+    inner.className = 'login-av-inner';
+    inner.style.background = av.color;
+    inner.textContent = av.letter;
+    wrap.appendChild(inner);
+    document.getElementById('login-name-display').textContent = user.username;
+  }
+}
+
+function doLogin() {
+  var pass = document.getElementById('login-pass').value;
+  var user = null;
+  for (var i = 0; i < OS.accounts.length; i++) {
+    if (OS.accounts[i].password === pass) { user = OS.accounts[i]; break; }
+  }
+  if (!user) {
+    var inp = document.getElementById('login-pass');
+    inp.style.borderColor = '#ff5f57';
+    inp.value = '';
+    setTimeout(function() { inp.style.borderColor = ''; }, 1200);
+    return;
+  }
+  OS.currentUser = user;
+  document.getElementById('login-screen').style.display = 'none';
+  showLoading('Signing in as ' + user.username + '...', 1200, function() { bootDesktop(); });
+}
+
+function addUserPrompt() {
+  var u = prompt('New username:');
+  if (!u || !u.trim()) return;
+  var p = prompt('New password:');
+  if (!p) return;
+  OS.accounts.push({ username: u.trim(), password: p, avatar: Math.floor(Math.random() * AVATARS.length) });
+  saveOS();
+  showNotif('Account Created', 'Account "' + u.trim() + '" has been added.');
+}
+
+// =====================
+// DESKTOP BOOT
+// =====================
+function bootDesktop() {
+  var d = document.getElementById('desktop');
+  d.style.display = 'block';
+  applyWallpaper();
+  buildTaskbar();
+  buildDesktopIcons();
+  startClock();
+  setTimeout(function() {
+    showNotif('Welcome back!', 'Logged in as ' + (OS.currentUser ? OS.currentUser.username : 'User'));
+  }, 900);
+}
+
+function applyWallpaper() {
+  document.getElementById('wallpaper').style.background = WALLPAPERS[OS.wallpaper || 0];
+}
+
+function buildDesktopIcons() {
+  var wrap = document.getElementById('desktop-icons');
+  wrap.innerHTML = '';
+  APPS.forEach(function(app) {
+    var el = document.createElement('div');
+    el.className = 'desk-icon';
+    el.title = app.name;
+    el.ondblclick = function() { openApp(app.id); };
+    el.innerHTML = '<div class="dicon-img" style="background:' + app.color + '">' + app.short + '</div>'
+      + '<div class="dicon-label">' + app.name + '</div>';
+    wrap.appendChild(el);
+  });
+}
+
+function buildTaskbar() {
+  var tb = document.getElementById('taskbar');
+  tb.className = OS.taskbarMode;
+
+  var appsHTML = APPS.slice(0, 5).map(function(a) {
+    return '<div class="tb-btn" title="' + a.name + '" onclick="openApp(\'' + a.id + '\')">'
+      + '<div style="width:22px;height:22px;border-radius:6px;background:' + a.color + ';font-size:8px;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700">' + a.short + '</div>'
+      + '</div>';
+  }).join('');
+
+  if (OS.taskbarMode === 'island') {
+    tb.innerHTML = '<div class="tb-island">'
+      + '<div class="tb-btn" onclick="toggleStartMenu()" title="Start">'
+      + '<svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>'
+      + '</div>'
+      + appsHTML
+      + '<div class="tb-sep"></div>'
+      + '<div class="tb-btn" onclick="toggleNotifPanel()" title="Notifications">'
+      + '<svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>'
+      + '</div>'
+      + '<div class="tb-clock" id="tb-clock" style="color:#fff;min-width:34px"></div>'
+      + '</div>';
+  } else {
+    tb.innerHTML = '<div class="tb-left">'
+      + '<div class="tb-btn" onclick="toggleStartMenu()" title="Start">'
+      + '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--accent)"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>'
+      + '</div>'
+      + appsHTML
+      + '</div>'
+      + '<div class="tb-right">'
+      + '<div class="tb-btn" onclick="toggleNotifPanel()" title="Notifications">'
+      + '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>'
+      + '</div>'
+      + '<div class="tb-clock" id="tb-clock" style="min-width:34px"></div>'
+      + '</div>';
+  }
+
+  // Position start menu
+  var sm = document.getElementById('start-menu');
+  sm.className = OS.taskbarMode === 'island' ? 'island-pos' : 'normal-pos';
+  sm.style.display = 'none';
+  startMenuOpen = false;
+}
+
+function startClock() {
+  function update() {
+    var clk = document.getElementById('tb-clock');
+    if (!clk) return;
+    var now = new Date();
+    var h = String(now.getHours()).padStart(2,'0');
+    var m = String(now.getMinutes()).padStart(2,'0');
+    var day = now.toLocaleDateString('en', {month:'short', day:'numeric'});
+    clk.innerHTML = h + ':' + m + '<br><span style="font-size:10px;opacity:.6;font-weight:400">' + day + '</span>';
+  }
+  update();
+  setInterval(update, 10000);
+}
+
+// =====================
+// START MENU
+// =====================
+function toggleStartMenu() {
+  startMenuOpen = !startMenuOpen;
+  var sm = document.getElementById('start-menu');
+  sm.style.display = startMenuOpen ? 'block' : 'none';
+  if (startMenuOpen) {
+    buildStartMenu('');
+    var si = document.getElementById('start-search-input');
+    if (si) { si.value = ''; si.focus(); }
+  }
+}
+
+function buildStartMenu(filter) {
+  var g = document.getElementById('start-apps-grid');
+  g.innerHTML = '';
+  var filtered = filter ? APPS.filter(function(a) {
+    return a.name.toLowerCase().indexOf(filter.toLowerCase()) !== -1;
+  }) : APPS;
+
+  filtered.forEach(function(app) {
+    var el = document.createElement('div');
+    el.className = 'start-app';
+    el.onclick = function() { openApp(app.id); closeStartMenu(); };
+    el.innerHTML = '<div class="sa-icon" style="background:' + app.color + '">' + app.short + '</div>'
+      + '<div class="sa-label">' + app.name + '</div>';
+    g.appendChild(el);
+  });
+
+  // User footer
+  var uav = document.getElementById('start-user-av');
+  var uname = document.getElementById('start-user-name');
+  if (uav && OS.currentUser) {
+    var av = AVATARS[OS.currentUser.avatar] || AVATARS[0];
+    uav.style.background = av.color;
+    uav.textContent = av.letter;
+  }
+  if (uname && OS.currentUser) uname.textContent = OS.currentUser.username;
+}
+
+function filterStartMenu(v) { buildStartMenu(v); }
+
+function closeStartMenu() {
+  startMenuOpen = false;
+  document.getElementById('start-menu').style.display = 'none';
+}
+
+// =====================
+// NOTIF PANEL
+// =====================
+function toggleNotifPanel() {
+  notifPanelOpen = !notifPanelOpen;
+  document.getElementById('notif-panel').style.display = notifPanelOpen ? 'block' : 'none';
+}
+
+// =====================
+// NOTIFICATIONS
+// =====================
+function showNotif(title, body) {
+  var wrap = document.getElementById('notif-wrap');
+  var n = document.createElement('div');
+  n.className = 'notif';
+  n.innerHTML = '<div class="notif-title">' + title + '</div><div style="color:var(--text2);font-size:11px">' + body + '</div>';
+  wrap.appendChild(n);
+  setTimeout(function() { n.remove(); }, 4000);
+}
+
+// =====================
+// WINDOWS
+// =====================
+function openApp(id) {
+  var existing = document.getElementById('win-' + id);
+  if (existing) {
+    existing.style.display = 'flex';
+    focusWindow(existing);
+    return;
+  }
+  var app = null;
+  for (var i = 0; i < APPS.length; i++) { if (APPS[i].id === id) { app = APPS[i]; break; } }
+  if (!app) return;
+
+  var cfg = WIN_CONFIGS[id] || {w: 500, h: 400, title: app.name};
+
+  var win = document.createElement('div');
+  win.className = 'window opening';
+  win.id = 'win-' + id;
+  var lft = 80 + Math.random() * 100;
+  var top = 50 + Math.random() * 80;
+  win.style.cssText = 'width:' + cfg.w + 'px;height:' + cfg.h + 'px;left:' + lft + 'px;top:' + top + 'px;z-index:' + (++OS.windowZ);
+
+  win.innerHTML = '<div class="win-titlebar" onmousedown="startDrag(event,\'' + id + '\')">'
+    + '<div class="win-title">' + cfg.title + '</div>'
+    + '<div class="win-controls">'
+    + '<div class="win-ctrl min" onclick="minimizeWin(\'' + id + '\')"></div>'
+    + '<div class="win-ctrl max" onclick="maximizeWin(\'' + id + '\')"></div>'
+    + '<div class="win-ctrl close" onclick="closeWin(\'' + id + '\')"></div>'
+    + '</div></div>'
+    + '<div class="win-body" id="winbody-' + id + '">' + buildAppContent(id) + '</div>'
+    + '<div class="resize-handle" onmousedown="startResize(event,\'' + id + '\')"></div>';
+
+  document.getElementById('desktop').appendChild(win);
+  win.addEventListener('mousedown', function() { focusWindow(win); });
+  setTimeout(function() { win.classList.remove('opening'); }, 300);
+  afterOpen(id);
+}
+
+function afterOpen(id) {
+  if (id === 'settings') setTimeout(function() { initSettings(); }, 10);
+  if (id === 'vms') setTimeout(function() { renderVMList(); }, 10);
+  if (id === 'terminal') setTimeout(function() { initTerminal(); }, 10);
+}
+
+function closeWin(id) {
+  var w = document.getElementById('win-' + id);
+  if (!w) return;
+  w.classList.add('closing');
+  setTimeout(function() { w.remove(); }, 200);
+}
+
+function minimizeWin(id) {
+  var w = document.getElementById('win-' + id);
+  if (w) w.style.display = 'none';
+}
+
+function maximizeWin(id) {
+  var w = document.getElementById('win-' + id);
+  if (!w) return;
+  if (w.dataset.maximized) {
+    w.style.cssText = w.dataset.prevStyle;
+    delete w.dataset.maximized;
+    delete w.dataset.prevStyle;
+  } else {
+    w.dataset.prevStyle = w.style.cssText;
+    w.dataset.maximized = '1';
+    w.style.cssText = 'width:100vw;height:calc(100vh - 52px);left:0;top:0;z-index:' + OS.windowZ + ';border-radius:0;';
+  }
+}
+
+function focusWindow(win) {
+  OS.windowZ++;
+  win.style.zIndex = OS.windowZ;
+}
+
+// =====================
+// DRAG & RESIZE
+// =====================
+function startDrag(e, id) {
+  if (e.target.classList.contains('win-ctrl')) return;
+  dragging = id;
+  var w = document.getElementById('win-' + id);
+  dragOffX = e.clientX - w.offsetLeft;
+  dragOffY = e.clientY - w.offsetTop;
+  focusWindow(w);
+}
+
+function startResize(e, id) {
+  e.stopPropagation(); e.preventDefault();
+  resizing = id;
+}
+
+document.addEventListener('mousemove', function(e) {
+  if (dragging) {
+    var w = document.getElementById('win-' + dragging);
+    if (w && !w.dataset.maximized) {
+      w.style.left = (e.clientX - dragOffX) + 'px';
+      w.style.top  = (e.clientY - dragOffY) + 'px';
+    }
+  }
+  if (resizing) {
+    var w = document.getElementById('win-' + resizing);
+    if (w) {
+      var nw = e.clientX - w.offsetLeft;
+      var nh = e.clientY - w.offsetTop;
+      if (nw > 240) w.style.width  = nw + 'px';
+      if (nh > 160) w.style.height = nh + 'px';
+    }
+  }
+});
+
+document.addEventListener('mouseup', function() { dragging = null; resizing = null; });
+
+// =====================
+// CONTEXT MENU
+// =====================
+document.getElementById('desktop').addEventListener('contextmenu', function(e) {
+  e.preventDefault();
+  if (e.target.closest('.window') || e.target.closest('#taskbar')) return;
+  var m = document.getElementById('ctx-menu');
+  m.style.display = 'block';
+  m.style.left = e.clientX + 'px';
+  m.style.top  = e.clientY + 'px';
+  m.innerHTML = '<div class="ctx-item" onclick="changeWallpaper();closeCtx()">Change Wallpaper</div>'
+    + '<div class="ctx-item" onclick="openApp(\'settings\');closeCtx()">Display Settings</div>'
+    + '<div class="ctx-sep"></div>'
+    + '<div class="ctx-item" onclick="showNotif(\'Desktop\',\'Refreshed.\');closeCtx()">Refresh</div>';
+});
+
+document.addEventListener('click', function(e) {
+  closeCtx();
+  if (startMenuOpen && !e.target.closest('#start-menu') && !e.target.closest('.tb-btn')) closeStartMenu();
+  if (notifPanelOpen && !e.target.closest('#notif-panel') && !e.target.closest('.tb-btn')) {
+    notifPanelOpen = false;
+    document.getElementById('notif-panel').style.display = 'none';
+  }
+});
+
+function closeCtx() { document.getElementById('ctx-menu').style.display = 'none'; }
+
+function changeWallpaper() {
+  OS.wallpaper = (OS.wallpaper + 1) % WALLPAPERS.length;
+  applyWallpaper(); saveOS();
+}
+
+// =====================
+// APP CONTENT
+// =====================
+function buildAppContent(id) {
+  switch (id) {
+    case 'lunarhelp': return buildLunarHelp();
+    case 'browser':   return buildBrowser();
+    case 'store':     return buildStore();
+    case 'settings':  return buildSettings();
+    case 'code':      return buildCode();
+    case 'vms':       return buildVMs();
+    case 'files':     return buildFiles();
+    case 'terminal':  return buildTerminal();
+    default: return '<div style="padding:20px;color:var(--text2)">App not available.</div>';
+  }
+}
+
+// ---- LUNARHELP ----
+var AI_RESP = {
+  'hello':  ['Hello! How can I help you today?','Hi there! What do you need?'],
+  'help':   ['I can help with LunarOS settings, apps, and more!','Ask me anything about your system.'],
+  'wallpaper': ['Right-click the desktop → Change Wallpaper, or go to Settings → Personalization.'],
+  'app':    ['LunarOS includes LunarHelp, GreatBrowser, LunarStore, Settings, Code, VM Manager, Files, and Terminal!'],
+  'vm':     ['The VM Manager lets you run isolated environments. You have Light LunarOS 16 & 17 preinstalled!'],
+  'password':['Passwords are stored locally. You can manage accounts in Settings → Account.'],
+  'default':['Interesting! Is there anything specific I can help you with?',
+             'I\'m here to help! Could you give me more detail?',
+             'Great question! Let me know what you want to do in LunarOS.']
+};
+
+function buildLunarHelp() {
+  return '<div class="chat-wrap">'
+    + '<div class="chat-header">'
+    + '<div class="chat-ai-icon">AI</div>'
+    + '<div><div style="font-size:13px;font-weight:700;color:var(--text)">LunarHelp</div>'
+    + '<div style="font-size:11px;color:var(--text2)">AI Assistant — Always online</div></div>'
+    + '</div>'
+    + '<div class="chat-msgs" id="chat-msgs">'
+    + '<div class="chat-msg ai">Hello! I\'m LunarHelp, your LunarOS assistant. How can I help you today?</div>'
+    + '</div>'
+    + '<div class="chat-input-row">'
+    + '<input class="chat-input" id="chat-input" placeholder="Ask anything..." onkeydown="if(event.key===\'Enter\')sendChat()">'
+    + '<button class="chat-send" onclick="sendChat()">Send</button>'
+    + '</div></div>';
+}
+
+function sendChat() {
+  var input = document.getElementById('chat-input');
+  if (!input) return;
+  var val = input.value.trim();
+  if (!val) return;
+  var msgs = document.getElementById('chat-msgs');
+  var um = document.createElement('div');
+  um.className = 'chat-msg user';
+  um.textContent = val;
+  msgs.appendChild(um);
+  input.value = '';
+  msgs.scrollTop = 99999;
+
+  setTimeout(function() {
+    var key = 'default';
+    var keys = Object.keys(AI_RESP);
+    for (var i = 0; i < keys.length; i++) {
+      if (keys[i] !== 'default' && val.toLowerCase().indexOf(keys[i]) !== -1) { key = keys[i]; break; }
+    }
+    var arr = AI_RESP[key];
+    var resp = arr[Math.floor(Math.random() * arr.length)];
+    var am = document.createElement('div');
+    am.className = 'chat-msg ai';
+    am.textContent = resp;
+    msgs.appendChild(am);
+    msgs.scrollTop = 99999;
+  }, 500 + Math.random() * 400);
+}
+
+// ---- BROWSER ----
+var browserHistory = ['lunar://home'];
+var browserIdx = 0;
+
+function buildBrowser() {
+  return '<div style="display:flex;flex-direction:column;height:100%">'
+    + '<div class="browser-bar">'
+    + '<button class="browser-go nav" onclick="browserNav(-1)">&#8592;</button>'
+    + '<button class="browser-go nav" onclick="browserNav(1)">&#8594;</button>'
+    + '<input class="browser-url" id="browser-url" value="lunar://home" onkeydown="if(event.key===\'Enter\')browserGo(this.value)">'
+    + '<button class="browser-go" onclick="browserGo(document.getElementById(\'browser-url\').value)">Go</button>'
+    + '</div>'
+    + '<div class="browser-content" id="browser-content">'
+    + getBrowserPage('home')
+    + '</div></div>';
+}
+
+function getBrowserPage(page) {
+  var pages = {
+    home: '<div class="page-hero"><h1>Welcome to GreatBrowser</h1><p style="opacity:.8;margin-top:6px">Your LunarOS internal browser.</p></div>'
+      + '<div class="page-cards">'
+      + '<div class="page-card" onclick="browserGo(\'lunar://news\')"><h3>LunarOS News</h3><p>Latest updates</p></div>'
+      + '<div class="page-card" onclick="browserGo(\'lunar://docs\')"><h3>Documentation</h3><p>Learn your OS</p></div>'
+      + '<div class="page-card" onclick="browserGo(\'lunar://store\')"><h3>App Store</h3><p>Discover apps</p></div>'
+      + '<div class="page-card" onclick="browserGo(\'lunar://about\')"><h3>About LunarOS</h3><p>Version info</p></div>'
+      + '</div>',
+    news: '<h2 style="margin-bottom:14px;color:var(--text)">LunarOS News</h2>'
+      + '<div class="page-card" style="margin-bottom:10px"><h3>LunarOS 4.2.1 Released</h3><p style="margin-top:5px">New island taskbar, improved glass effects, and enhanced VM management.</p></div>'
+      + '<div class="page-card" style="margin-bottom:10px"><h3>LunarStore Expansion</h3><p style="margin-top:5px">50 new apps added to the store this week!</p></div>'
+      + '<div class="page-card"><h3>LunarHelp AI Upgraded</h3><p style="margin-top:5px">Your assistant now understands more queries.</p></div>',
+    docs: '<h2 style="margin-bottom:14px;color:var(--text)">Documentation</h2>'
+      + '<div class="page-card" style="margin-bottom:10px"><h3>Getting Started</h3><p>Double-click icons to open apps. Right-click desktop for options.</p></div>'
+      + '<div class="page-card" style="margin-bottom:10px"><h3>Virtual Machines</h3><p>Create and manage lightweight VMs from the VM Manager app.</p></div>'
+      + '<div class="page-card"><h3>Personalization</h3><p>Change wallpaper and taskbar in Settings.</p></div>',
+    about: '<div class="page-hero" style="text-align:center"><div style="font-size:44px;margin-bottom:8px">&#9790;</div><h1>LunarOS</h1><p style="opacity:.8;margin-top:8px">Version 4.2.1 — Build 20240329</p><p style="opacity:.6;font-size:12px;margin-top:4px">A modern, beautiful operating system experience</p></div>'
+  };
+  return pages[page] || pages['home'];
+}
+
+function browserGo(url) {
+  var u = url.trim().toLowerCase();
+  var urlInput = document.getElementById('browser-url');
+  if (urlInput) urlInput.value = u;
+  var content = document.getElementById('browser-content');
+  if (!content) return;
+  var map = {'lunar://home':'home','lunar://news':'news','lunar://docs':'docs','lunar://store':'store','lunar://about':'about'};
+  var page = map[u] || 'home';
+  content.innerHTML = getBrowserPage(page);
+  if (u !== browserHistory[browserIdx]) {
+    browserHistory = browserHistory.slice(0, browserIdx + 1);
+    browserHistory.push(u);
+    browserIdx++;
+  }
+}
+
+function browserNav(d) {
+  var ni = browserIdx + d;
+  if (ni < 0 || ni >= browserHistory.length) return;
+  browserIdx = ni;
+  browserGo(browserHistory[ni]);
+}
+
+// ---- STORE ----
+var STORE_APPS = [
+  {name:'Lunar Notes', cat:'Productivity', color:'linear-gradient(135deg,#ffd86a,#ffa020)'},
+  {name:'Pixel Paint',  cat:'Creative',    color:'linear-gradient(135deg,#ff6a8d,#ff9a6a)'},
+  {name:'LunarCal',    cat:'Utility',      color:'linear-gradient(135deg,#6affb8,#20c080)'},
+  {name:'MusicBox',    cat:'Media',        color:'linear-gradient(135deg,#b86aff,#6a8dff)'},
+  {name:'WeatherLive', cat:'Utility',      color:'linear-gradient(135deg,#6ab4ff,#20a0e0)'},
+  {name:'SpeedTest',   cat:'Network',      color:'linear-gradient(135deg,#ff8a6a,#e04040)'},
+  {name:'Lunar Calc',  cat:'Utility',      color:'linear-gradient(135deg,#888,#bbb)'},
+  {name:'PhotoView',   cat:'Media',        color:'linear-gradient(135deg,#6affdf,#20b0a0)'}
+];
+
+function buildStore() {
+  var cards = STORE_APPS.map(function(a, i) {
+    return '<div class="store-app">'
+      + '<div class="store-app-icon" style="background:' + a.color + ';border-radius:12px"></div>'
+      + '<div class="store-app-name">' + a.name + '</div>'
+      + '<div class="store-app-cat">' + a.cat + '</div>'
+      + '<button class="store-btn" id="sbtn-' + i + '" onclick="installApp(' + i + ',\'' + a.name + '\')">Get</button>'
+      + '</div>';
+  }).join('');
+  return '<div style="display:flex;flex-direction:column;height:100%;overflow:hidden">'
+    + '<div class="store-header"><h2 style="font-size:18px">LunarStore</h2><p style="opacity:.6;font-size:12px;margin-top:3px">Discover apps for LunarOS</p></div>'
+    + '<div style="overflow:auto;flex:1"><div class="store-grid">' + cards + '</div></div>'
+    + '</div>';
+}
+
+function installApp(i, name) {
+  var btn = document.getElementById('sbtn-' + i);
+  if (!btn || btn.textContent === 'Installed') return;
+  btn.textContent = 'Installing...';
+  btn.disabled = true;
+  setTimeout(function() {
+    btn.textContent = 'Installed';
+    btn.style.background = 'rgba(40,200,80,0.2)';
+    btn.style.color = '#1a9a40';
+    showNotif('App Installed', name + ' has been installed.');
+  }, 1400);
+}
+
+// ---- SETTINGS ----
+function buildSettings() {
+  return '<div class="settings-layout">'
+    + '<div class="settings-sidebar">'
+    + '<div class="set-nav active" onclick="setSection(\'personalization\',this)">Personalization</div>'
+    + '<div class="set-nav" onclick="setSection(\'account\',this)">Account</div>'
+    + '<div class="set-nav" onclick="setSection(\'system\',this)">System</div>'
+    + '<div class="set-nav" onclick="setSection(\'taskbar\',this)">Taskbar</div>'
+    + '<div class="set-nav" onclick="setSection(\'about\',this)">About</div>'
+    + '</div>'
+    + '<div class="settings-main">'
+    + '<div class="set-section active" id="set-personalization">'
+    + '<div class="set-title">Personalization</div>'
+    + '<div style="font-size:12px;font-weight:600;color:var(--text2);margin-bottom:9px">Wallpaper</div>'
+    + '<div class="wp-grid" id="wp-grid"></div>'
+    + '</div>'
+    + '<div class="set-section" id="set-account">'
+    + '<div class="set-title">Account</div>'
+    + '<div id="set-account-content"></div>'
+    + '</div>'
+    + '<div class="set-section" id="set-system">'
+    + '<div class="set-title">System</div>'
+    + '<div class="set-row"><div><div class="set-row-label">Sound Effects</div><div class="set-row-desc">System sounds</div></div>'
+    + '<div class="toggle ' + (OS.soundOn ? 'on' : '') + '" id="sound-toggle" onclick="toggleSound()"></div></div>'
+    + '<div class="set-row"><div><div class="set-row-label">Language</div><div class="set-row-desc">' + OS.language + '</div></div></div>'
+    + '<div class="set-row"><div><div class="set-row-label">Time Zone</div><div class="set-row-desc">' + OS.timezone + '</div></div></div>'
+    + '<div class="set-row" style="cursor:pointer" onclick="doLogout()"><div><div class="set-row-label" style="color:#d03030">Sign Out</div><div class="set-row-desc">Return to login screen</div></div></div>'
+    + '</div>'
+    + '<div class="set-section" id="set-taskbar">'
+    + '<div class="set-title">Taskbar</div>'
+    + '<div class="taskbar-modes" style="max-width:300px">'
+    + '<div class="taskbar-mode-opt ' + (OS.taskbarMode==='island'?'selected':'') + '" onclick="setTaskbarModeSetting(\'island\',this.parentElement)"><div class="mode-name">Island</div><div class="mode-desc">Modern floating pill</div></div>'
+    + '<div class="taskbar-mode-opt ' + (OS.taskbarMode==='normal'?'selected':'') + '" onclick="setTaskbarModeSetting(\'normal\',this.parentElement)"><div class="mode-name">Normal</div><div class="mode-desc">Classic full-width</div></div>'
+    + '</div></div>'
+    + '<div class="set-section" id="set-about">'
+    + '<div class="set-title">About LunarOS</div>'
+    + '<div class="set-row"><div><div class="set-row-label">Version</div><div class="set-row-desc">LunarOS 4.2.1</div></div></div>'
+    + '<div class="set-row"><div><div class="set-row-label">Build</div><div class="set-row-desc">20240329-release</div></div></div>'
+    + '<div class="set-row"><div><div class="set-row-label">Architecture</div><div class="set-row-desc">x86_64 / ARM64</div></div></div>'
+    + '<div class="set-row"><div><div class="set-row-label">LunarCore</div><div class="set-row-desc">v4.2.1-stable</div></div></div>'
+    + '</div>'
+    + '</div></div>';
+}
+
+function initSettings() {
+  // Wallpapers
+  var g = document.getElementById('wp-grid');
+  if (g) {
+    g.innerHTML = '';
+    WALLPAPERS.forEach(function(wp, i) {
+      var d = document.createElement('div');
+      d.className = 'wp-thumb' + (i === OS.wallpaper ? ' active' : '');
+      d.onclick = (function(idx) { return function() {
+        OS.wallpaper = idx; applyWallpaper(); saveOS();
+        document.querySelectorAll('.wp-thumb').forEach(function(el, j) { el.classList.toggle('active', j === idx); });
+      }; })(i);
+      var inner = document.createElement('div');
+      inner.className = 'wp-thumb-inner';
+      inner.style.background = wp;
+      d.appendChild(inner);
+      g.appendChild(d);
+    });
+  }
+  // Account
+  var user = OS.currentUser;
+  var ac = document.getElementById('set-account-content');
+  if (user && ac) {
+    var av = AVATARS[user.avatar] || AVATARS[0];
+    ac.innerHTML = '<div style="display:flex;align-items:center;gap:14px;margin-bottom:18px">'
+      + '<div style="width:52px;height:52px;border-radius:50%;background:' + av.color + ';display:flex;align-items:center;justify-content:center;font-size:20px;color:#fff;font-weight:700">' + av.letter + '</div>'
+      + '<div><div style="font-size:15px;font-weight:700;color:var(--text)">' + user.username + '</div><div style="font-size:11px;color:var(--text2)">Local Account</div></div>'
+      + '</div>'
+      + '<div style="font-size:12px;font-weight:600;color:var(--text2);margin-bottom:9px">Change Avatar</div>'
+      + '<div class="avatar-grid" id="settings-av-grid" style="margin-bottom:14px"></div>'
+      + '<button onclick="changeUsername()" style="background:var(--accent);color:#fff;border:none;border-radius:8px;padding:8px 16px;font-family:var(--font);font-size:13px;font-weight:600;cursor:pointer">Change Username</button>';
+
+    var sg = document.getElementById('settings-av-grid');
+    AVATARS.forEach(function(sav, i) {
+      var d = document.createElement('div');
+      d.className = 'av-opt' + (i === user.avatar ? ' selected' : '');
+      d.onclick = (function(idx) { return function() {
+        user.avatar = idx; saveOS();
+        document.querySelectorAll('#settings-av-grid .av-opt').forEach(function(el, j) { el.classList.toggle('selected', j === idx); });
+        showNotif('Avatar Updated','Your avatar has been changed.');
+      }; })(i);
+      var inner = document.createElement('div');
+      inner.className = 'av-inner';
+      inner.style.background = sav.color;
+      inner.textContent = sav.letter;
+      d.appendChild(inner);
+      sg.appendChild(d);
+    });
+  }
+}
+
+function setSection(id, el) {
+  document.querySelectorAll('.set-section').forEach(function(s) { s.classList.remove('active'); });
+  document.querySelectorAll('.set-nav').forEach(function(n) { n.classList.remove('active'); });
+  var sec = document.getElementById('set-' + id);
+  if (sec) sec.classList.add('active');
+  if (el) el.classList.add('active');
+  if (id === 'account') setTimeout(function() { initSettings(); }, 10);
+  if (id === 'personalization') setTimeout(function() { initSettings(); }, 10);
+}
+
+function toggleSound() {
+  OS.soundOn = !OS.soundOn;
+  var tgl = document.getElementById('sound-toggle');
+  if (tgl) tgl.classList.toggle('on', OS.soundOn);
+  saveOS();
+}
+
+function setTaskbarModeSetting(mode, container) {
+  OS.taskbarMode = mode; saveOS();
+  if (container) {
+    container.querySelectorAll('.taskbar-mode-opt').forEach(function(el) { el.classList.remove('selected'); });
+  }
+  event.target.closest('.taskbar-mode-opt').classList.add('selected');
+  buildTaskbar();
+  showNotif('Taskbar Updated', 'Mode changed to ' + mode + '.');
+}
+
+function changeUsername() {
+  var n = prompt('New username:');
+  if (!n || !n.trim()) return;
+  OS.currentUser.username = n.trim();
+  for (var i = 0; i < OS.accounts.length; i++) {
+    if (OS.accounts[i] === OS.currentUser) OS.accounts[i].username = n.trim();
+  }
+  saveOS();
+  showNotif('Username Updated', 'Your username is now ' + n.trim() + '.');
+  initSettings();
+}
+
+function doLogout() {
+  if (!confirm('Sign out of LunarOS?')) return;
+  OS.currentUser = null;
+  document.querySelectorAll('.window').forEach(function(w) { w.remove(); });
+  document.getElementById('desktop').style.display = 'none';
+  document.getElementById('login-pass').value = '';
+  showLogin();
+}
+
+// ---- CODE ----
+function buildCode() {
+  return '<div style="display:flex;flex-direction:column;height:100%">'
+    + '<div class="code-toolbar">'
+    + '<select class="code-lang-sel" id="code-lang"><option value="js">JavaScript</option><option value="html">HTML</option></select>'
+    + '<button class="code-run-btn" onclick="runCode()">&#9658; Run</button>'
+    + '<span style="color:rgba(255,255,255,.4);font-size:11px;margin-left:8px" id="code-status">Ready</span>'
+    + '</div>'
+    + '<div class="code-area" style="flex:1">'
+    + '<textarea class="code-input" id="code-input" spellcheck="false">// Welcome to LunarOS Code Editor\n// Write JavaScript and click Run:\n\nfunction greet(name) {\n  return "Hello, " + name + "! Welcome to LunarOS.";\n}\n\nconsole.log(greet("World"));\nconsole.log("Version: 4.2.1");\n\nvar sum = 0;\nfor (var i = 1; i <= 10; i++) sum += i;\nconsole.log("Sum 1-10:", sum);</textarea>'
+    + '<div class="code-output" id="code-output"><span style="color:rgba(106,255,154,.35)">// Output appears here</span></div>'
+    + '</div></div>';
+}
+
+function runCode() {
+  var lang = document.getElementById('code-lang');
+  if (!lang) return;
+  if (lang.value !== 'js') {
+    document.getElementById('code-output').innerHTML = '<span style="color:#ffa020">Only JavaScript execution is supported.</span>';
+    return;
+  }
+  var code = document.getElementById('code-input').value;
+  var out = document.getElementById('code-output');
+  var status = document.getElementById('code-status');
+  var logs = [];
+  var fakeConsole = {
+    log: function() {
+      var args = Array.prototype.slice.call(arguments);
+      logs.push(args.map(function(x) { return typeof x === 'object' ? JSON.stringify(x) : String(x); }).join(' '));
+    }
+  };
+  try {
+    status.textContent = 'Running...';
+    new Function('console', code)(fakeConsole);
+    out.innerHTML = logs.length
+      ? logs.map(function(l) { return '<div>' + l + '</div>'; }).join('')
+      : '<span style="color:rgba(255,255,255,.3)">(no output)</span>';
+    status.textContent = 'Done \u2713';
+    status.style.color = '#6aff9a';
+    setTimeout(function() { status.textContent = 'Ready'; status.style.color = ''; }, 2000);
+  } catch(e) {
+    out.innerHTML = '<span style="color:#ff6a6a">Error: ' + e.message + '</span>';
+    status.textContent = 'Error';
+    status.style.color = '#ff6a6a';
+    setTimeout(function() { status.textContent = 'Ready'; status.style.color = ''; }, 2000);
+  }
+}
+
+// ---- VMs ----
+function buildVMs() {
+  return '<div style="display:flex;flex-direction:column;height:100%;overflow:hidden">'
+    + '<div class="vm-header-bar">'
+    + '<div><div style="font-size:15px;font-weight:700;color:var(--text)">Virtual Machines</div>'
+    + '<div style="font-size:11px;color:var(--text2);margin-top:2px">Manage your LunarOS environments</div></div>'
+    + '<button class="new-vm-btn" onclick="newVM()">+ New VM</button>'
+    + '</div>'
+    + '<div class="vm-grid" id="vm-grid"></div>'
+    + '</div>';
+}
+
+function renderVMList() {
+  var g = document.getElementById('vm-grid');
+  if (!g) return;
+  g.innerHTML = '';
+  OS.vms.forEach(function(vm) {
+    var card = document.createElement('div');
+    card.className = 'vm-card';
+    var isRunning = vm.status === 'running';
+    card.innerHTML = '<div class="vm-card-top">'
+      + '<div class="vm-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg></div>'
+      + '<div><div class="vm-name">' + vm.name + '</div><div class="vm-ver">v' + vm.version + ' &middot; ' + vm.ram + ' RAM &middot; ' + vm.disk + '</div></div>'
+      + '</div>'
+      + '<div class="vm-status ' + vm.status + '">'
+      + '<div style="width:6px;height:6px;border-radius:50%;background:' + (isRunning ? '#28c840' : '#aaa') + '"></div>'
+      + (isRunning ? 'Running' : 'Stopped')
+      + '</div>'
+      + '<div class="vm-actions">'
+      + '<button class="vm-btn" onclick="startVM(\'' + vm.id + '\')">' + (isRunning ? 'Restart' : 'Start') + '</button>'
+      + '<button class="vm-btn sec" onclick="stopVM(\'' + vm.id + '\')">Stop</button>'
+      + '<button class="vm-btn del" onclick="deleteVM(\'' + vm.id + '\')">Del</button>'
+      + '</div>';
+    g.appendChild(card);
+  });
+  if (OS.vms.length === 0) {
+    g.innerHTML = '<div style="padding:20px;color:var(--text2);font-size:13px;text-align:center;grid-column:1/-1">No virtual machines. Click "+ New VM" to create one.</div>';
+  }
+}
+
+function startVM(id) {
+  var vm = null;
+  for (var i = 0; i < OS.vms.length; i++) { if (OS.vms[i].id === id) { vm = OS.vms[i]; break; } }
+  if (!vm) return;
+  var ov = document.getElementById('vm-overlay');
+  document.getElementById('vm-load-name').textContent = vm.name;
+  document.getElementById('vm-load-status').textContent = 'Preparing virtual machine...';
+  document.getElementById('vm-load-bar').style.width = '0%';
+  ov.style.display = 'flex';
+
+  var statuses = ['Initializing kernel...','Mounting filesystem...','Loading drivers...','Starting services...','Almost ready...'];
+  var p = 0, si = 0;
+  var t = setInterval(function() {
+    p += 14 + Math.random() * 8;
+    if (p > 100) p = 100;
+    document.getElementById('vm-load-bar').style.width = p + '%';
+    if (si < statuses.length) document.getElementById('vm-load-status').textContent = statuses[si++];
+    if (p >= 100) {
+      clearInterval(t);
+      setTimeout(function() {
+        ov.style.display = 'none';
+        vm.status = 'running'; saveOS(); renderVMList();
+        showNotif(vm.name, 'Virtual machine is now running.');
+      }, 600);
+    }
+  }, 280);
+}
+
+function stopVM(id) {
+  for (var i = 0; i < OS.vms.length; i++) {
+    if (OS.vms[i].id === id) { OS.vms[i].status = 'stopped'; break; }
+  }
+  saveOS(); renderVMList();
+  showNotif('VM', 'Virtual machine stopped.');
+}
+
+function deleteVM(id) {
+  if (!confirm('Delete this virtual machine?')) return;
+  OS.vms = OS.vms.filter(function(v) { return v.id !== id; });
+  saveOS(); renderVMList();
+}
+
+function newVM() {
+  var name = prompt('VM Name:', 'My LunarOS VM');
+  if (!name || !name.trim()) return;
+  var id = 'vm' + Date.now();
+  OS.vms.push({id: id, name: name.trim(), version: '16.0', status: 'stopped', ram: '2GB', disk: '20GB'});
+  saveOS(); renderVMList();
+  showNotif('VM Created', name.trim() + ' has been created.');
+}
+
+// ---- FILES ----
+function buildFiles() {
+  var items = [
+    {name:'Documents', icon:'&#128193;'},{name:'Downloads', icon:'&#128193;'},
+    {name:'Pictures', icon:'&#128193;'},{name:'readme.txt', icon:'&#128196;'},
+    {name:'LunarOS.cfg', icon:'&#9881;'},{name:'notes.md', icon:'&#128203;'}
+  ];
+  return '<div style="display:flex;height:100%">'
+    + '<div class="files-sidebar">'
+    + '<div style="font-size:10px;color:var(--text2);font-weight:600;padding:4px 8px;margin-bottom:4px">PLACES</div>'
+    + ['Home','Desktop','Downloads','Documents','Pictures'].map(function(p) {
+        return '<div class="files-nav">' + p + '</div>';
+      }).join('')
+    + '</div>'
+    + '<div class="files-main"><div class="files-grid">'
+    + items.map(function(it) {
+        return '<div class="file-item"><div class="file-icon">' + it.icon + '</div><div class="file-name">' + it.name + '</div></div>';
+      }).join('')
+    + '</div></div></div>';
+}
+
+// ---- TERMINAL ----
+var termHistory = [], termHistIdx = -1;
+
+function buildTerminal() {
+  return '<div class="term-wrap">'
+    + '<div class="term-topbar">LunarOS Terminal v1.0 — ' + (OS.currentUser ? OS.currentUser.username : 'user') + '@lunar</div>'
+    + '<div class="term-output" id="term-output">'
+    + '<div style="color:#6a8dff">LunarOS Terminal &mdash; type \'help\' for commands</div>'
+    + '<br></div>'
+    + '<div class="term-input-row">'
+    + '<span class="term-prompt" id="term-prompt">' + (OS.currentUser ? OS.currentUser.username : 'user') + '@lunar:~$</span>'
+    + '<input class="term-input" id="term-input" autocomplete="off" spellcheck="false" onkeydown="handleTermKey(event)">'
+    + '</div></div>';
+}
+
+function initTerminal() {
+  setTimeout(function() {
+    var inp = document.getElementById('term-input');
+    if (inp) inp.focus();
+  }, 50);
+}
+
+var TERM_CMDS = {
+  help: function() { return 'Commands: help, ls, pwd, whoami, date, uname, echo, clear, neofetch'; },
+  ls:   function() { return 'Documents  Downloads  Pictures  readme.txt  LunarOS.cfg  notes.md'; },
+  pwd:  function() { return '/home/' + (OS.currentUser ? OS.currentUser.username : 'user'); },
+  whoami: function() { return OS.currentUser ? OS.currentUser.username : 'user'; },
+  date: function() { return new Date().toString(); },
+  uname: function() { return 'LunarOS 4.2.1 x86_64'; },
+  clear: function() { return '__CLEAR__'; },
+  neofetch: function() {
+    var u = OS.currentUser ? OS.currentUser.username : 'user';
+    return '<span style="color:#6a8dff">  .oOo.  </span>  <b>OS:</b> LunarOS 4.2.1<br>'
+      + '<span style="color:#6a8dff"> (    )  </span>  <b>User:</b> ' + u + '<br>'
+      + '<span style="color:#6a8dff">  \'~~\'  </span>  <b>Shell:</b> LunarSH 2.1<br>'
+      + '          <b>Taskbar:</b> ' + OS.taskbarMode + '<br>'
+      + '          <b>Language:</b> ' + OS.language;
+  }
+};
+
+function handleTermKey(e) {
+  var inp = document.getElementById('term-input');
+  if (!inp) return;
+  if (e.key === 'Enter') {
+    var cmd = inp.value.trim();
+    if (!cmd) return;
+    termHistory.unshift(cmd); termHistIdx = -1;
+    var u = OS.currentUser ? OS.currentUser.username : 'user';
+    appendTermLine('<span style="color:#6aff9a">' + u + '@lunar:~$</span> ' + escHTML(cmd));
+    var parts = cmd.split(' ');
+    var base = parts[0];
+    var fn = TERM_CMDS[base];
+    if (fn) {
+      var result = fn(parts.slice(1).join(' '));
+      if (result === '__CLEAR__') {
+        document.getElementById('term-output').innerHTML = '';
+      } else { appendTermLine(result); }
+    } else if (base === 'echo') {
+      appendTermLine(escHTML(parts.slice(1).join(' ')));
+    } else {
+      appendTermLine('<span style="color:#ff6a6a">' + escHTML(base) + ': command not found</span>');
+    }
+    inp.value = '';
+  } else if (e.key === 'ArrowUp') {
+    termHistIdx = Math.min(termHistIdx + 1, termHistory.length - 1);
+    inp.value = termHistory[termHistIdx] || '';
+  } else if (e.key === 'ArrowDown') {
+    termHistIdx = Math.max(termHistIdx - 1, -1);
+    inp.value = termHistIdx >= 0 ? termHistory[termHistIdx] : '';
+  }
+}
+
+function appendTermLine(html) {
+  var out = document.getElementById('term-output');
+  if (!out) return;
+  var d = document.createElement('div');
+  d.innerHTML = html;
+  out.appendChild(d);
+  out.scrollTop = 99999;
+}
+
+function escHTML(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+// =====================
+// BOOT
+// =====================
+init();
+</script>
+</body>
+</html>
