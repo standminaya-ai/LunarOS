@@ -2,44 +2,65 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>URL Revelada</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>URL Reveal</title>
   <style>
     body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #0c0f1a;
+      color: #e0e0ff;
       display: flex;
+      flex-direction: column;
       justify-content: center;
       align-items: center;
       height: 100vh;
-      background-color: #111;
-      color: #0f0;
-      font-family: monospace;
+      margin: 0;
       text-align: center;
     }
     .url-box {
-      padding: 20px;
-      border: 2px solid #0f0;
-      border-radius: 10px;
-      background-color: rgba(0,0,0,0.8);
+      background: rgba(255,255,255,0.1);
+      padding: 16px 24px;
+      border-radius: 14px;
+      margin-bottom: 16px;
+      word-break: break-all;
+      font-size: 18px;
+    }
+    button {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 12px;
+      background: #4a90e2;
+      color: white;
+      font-size: 16px;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+    button:hover {
+      background: #357ab8;
     }
   </style>
 </head>
 <body>
-  <div class="url-box">
-    <h2>URL Actual de la Página</h2>
-    <p id="urlText">Cargando...</p>
-    <button onclick="copyURL()">Copiar URL</button>
-  </div>
+
+  <h1>Tu URL de GitHub Pages</h1>
+  <div class="url-box" id="urlBox"></div>
+  <button onclick="copyURL()">Copiar URL</button>
 
   <script>
-    // Obtener la URL actual
+    // Mostrar la URL actual de la página
+    const urlBox = document.getElementById('urlBox');
     const currentURL = window.location.href;
-    document.getElementById('urlText').innerText = currentURL;
+    urlBox.textContent = currentURL;
 
     // Función para copiar la URL al portapapeles
     function copyURL() {
-      navigator.clipboard.writeText(currentURL)
-        .then(() => alert('URL copiada al portapapeles'))
-        .catch(() => alert('No se pudo copiar la URL'));
+      navigator.clipboard.writeText(currentURL).then(() => {
+        alert("¡URL copiada al portapapeles!");
+      }).catch(() => {
+        alert("No se pudo copiar la URL.");
+      });
     }
   </script>
+
 </body>
 </html>
