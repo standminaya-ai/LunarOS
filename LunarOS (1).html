@@ -1558,5 +1558,26 @@ function escHTML(s) {
 // =====================
 init();
 </script>
-</body>
-</html>
+</body><script>
+  // Este script asegura que LunarOS se muestre en toda la ventana
+  document.addEventListener("DOMContentLoaded", function() {
+    // Quita cualquier mensaje de carga si existe
+    const loading = document.querySelector(".loading");
+    if(loading) loading.remove();
+
+    // Ajusta el contenido del body para mostrar LunarOS
+    document.body.style.margin = "0";
+    document.body.style.padding = "0";
+    document.body.style.overflow = "hidden";
+
+    // Opcional: si tienes un div principal de LunarOS, asegúrate que ocupe toda la pantalla
+    const mainOS = document.querySelector("#main-os");
+    if(mainOS) {
+      mainOS.style.position = "absolute";
+      mainOS.style.top = "0";
+      mainOS.style.left = "0";
+      mainOS.style.width = "100%";
+      mainOS.style.height = "100%";
+    }
+  });
+</script>
