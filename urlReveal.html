@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>URL Revelada</title>
+  <style>
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background-color: #111;
+      color: #0f0;
+      font-family: monospace;
+      text-align: center;
+    }
+    .url-box {
+      padding: 20px;
+      border: 2px solid #0f0;
+      border-radius: 10px;
+      background-color: rgba(0,0,0,0.8);
+    }
+  </style>
+</head>
+<body>
+  <div class="url-box">
+    <h2>URL Actual de la Página</h2>
+    <p id="urlText">Cargando...</p>
+    <button onclick="copyURL()">Copiar URL</button>
+  </div>
+
+  <script>
+    // Obtener la URL actual
+    const currentURL = window.location.href;
+    document.getElementById('urlText').innerText = currentURL;
+
+    // Función para copiar la URL al portapapeles
+    function copyURL() {
+      navigator.clipboard.writeText(currentURL)
+        .then(() => alert('URL copiada al portapapeles'))
+        .catch(() => alert('No se pudo copiar la URL'));
+    }
+  </script>
+</body>
+</html>
